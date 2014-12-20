@@ -19,6 +19,8 @@
  *   Emeric BRUN <ebrun at exceliance dot fr>
  * Modified by:
  *   Nicolas SZALAY <nico at rottenbytes dot info>
+ * Modified by:
+ *   Marc FALZON <marc at baha dot mu>
  **/
 
 #include <sys/types.h>
@@ -93,6 +95,7 @@ typedef struct hap_entry {
   char *svname;
   unsigned long long bin;
   unsigned long long bout;
+  unsigned long long scur;
   unsigned long long stot;
   unsigned long long rate;
   unsigned long long ereq;
@@ -226,7 +229,7 @@ static void hap_submit_gauge(const char *svname, const char *pxname, const char 
 
   va_start(ap, len);
   for (i = 0; i < len; i++) {
-    values[i].gauge = va_arg(ap, double);
+    values[i].gauge = (double)va_arg(ap, unsigned long long);
   }
   va_end(ap);
 
@@ -322,6 +325,9 @@ static void hap_line2entry(char *line)
       pentry->svname = strdup(p);
       break;
     case 4:
+      pentry->scur = (unsigned long long) atoll(p);
+      break;
+    case 7:
       pentry->stot = (unsigned long long) atoll(p) * interval_g;
       break;
     case 8:
@@ -725,8 +731,8 @@ static int hap_read(void)
     }
 
     if (hap_flags & HAP_SESSIONS) {
-      hap_submit_counter(pentry->svname, pentry->pxname,
-                         "hap_sessions", 2, pentry->stot, pentry->rate);
+      hap_submit_gauge(pentry->svname, pentry->pxname,
+                         "hap_sessions", 1, pentry->scur);
       hap_submit_gauge(pentry->svname, pentry->pxname,
                        "frequency", 1, pentry->req_rate);
     }
