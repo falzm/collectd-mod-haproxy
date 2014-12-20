@@ -80,7 +80,7 @@ static const char *config_keys[] = {
   NULL
 };
 
-static int config_keys_num = 11;
+static int config_keys_num = 12;
 
 static unsigned long hap_restart_gap = 20;
 
