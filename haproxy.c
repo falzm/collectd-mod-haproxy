@@ -126,6 +126,9 @@ typedef struct hap_status {
 static hap_entry_t *hap_entry_list = NULL;
 static hap_status_t *hap_status_list = NULL;
 
+static unsigned long hap_uptime;
+static unsigned long hap_curconns;
+
 
 static int hap_config(const char *key, const char *value)
 {
@@ -238,8 +241,10 @@ static void hap_submit_gauge(const char *svname, const char *pxname, const char 
   vl.time = 0;
   snprintf(vl.host, sizeof(vl.host), "%s", hostname_g);
   snprintf(vl.plugin, sizeof(vl.plugin), "haproxy");
-  snprintf(vl.type_instance, sizeof(vl.type_instance), "%s-%s", svname,
-           pxname);
+  if (svname && pxname) {
+    snprintf(vl.type_instance, sizeof(vl.type_instance), "%s-%s", svname,
+             pxname);
+  }
   sstrncpy(vl.type, type, sizeof(vl.type));
   plugin_dispatch_values(&vl);
   free(values);
@@ -428,7 +433,7 @@ static void hap_line2entry(char *line)
   hap_entry_list = pentry;
 }
 
-static int hap_retrieveuptime(unsigned long *uptime)
+static int hap_retrieveinfo()
 {
   int cread = 0;
   int arg = 0;
@@ -442,7 +447,7 @@ static int hap_retrieveuptime(unsigned long *uptime)
   char *e;
   int ret = -1;
 
-  *uptime = 0;
+  hap_uptime = 0;
 
   /* create unix socket */
   s_fd = socket(AF_UNIX, SOCK_STREAM, 0);
@@ -490,9 +495,12 @@ static int hap_retrieveuptime(unsigned long *uptime)
       while (*e) {
         *e = 0;
         if (!strncmp(line, "Uptime_sec:", strlen("Uptime_sec:"))) {
-          *uptime = (unsigned long) atol(line + 11);
+          hap_uptime = (unsigned long) atol(line + 11);
           ret = 0;
-          goto err;
+        }
+        if (!strncmp(line, "CurrConns:", strlen("CurrConns:"))) {
+          hap_curconns = (unsigned long) atol(line + 10);
+          ret = 0;
         }
         line = ++e;
         while (*e && *e != '\n')
@@ -642,7 +650,6 @@ static int hap_read(void)
   hap_entry_t *pentry;
   hap_entry_t *pfree;
   hap_status_t *pstatus;
-  unsigned long uptime;
   int i;
 
 
@@ -652,16 +659,19 @@ static int hap_read(void)
 
   /* retrieve date after stats to be sure
      haproxy not restarted between the 2 connections */
-  if (hap_retrieveuptime(&uptime) < 0) {
+  if (hap_retrieveinfo() < 0) {
     goto noreg;
   }
 
   /* Haproxy seems to be restarted, waiting Restart Gap + 1sec
      restart_gap should be superior or equal to heartbeat */
 
-  if (uptime < (hap_restart_gap + 1)) {
+  if (hap_uptime < (hap_restart_gap + 1)) {
     goto noreg;
   }
+
+  /* Submit global current connections count */
+  hap_submit_gauge(NULL, NULL, "current_connections", 1, hap_curconns);
 
   pentry = hap_entry_list;
 
@@ -762,6 +772,7 @@ static int hap_read(void)
       hap_submit_gauge(pentry->svname, pentry->pxname, "hap_status",
                        1, pentry->status);
     }
+
   filtered:
 
     pfree = pentry;

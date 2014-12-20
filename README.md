@@ -2,8 +2,11 @@
 
 This [collectd][0] plugin fetches metrics and states from a HAProxy [stats socket][1].
 
-It is a fork of [Fotolia/collectd-mod-haproxy][2]: instead of collecting sessions metrics as counters (`stot` and
-`rate`), it collects current sessions (`scur`) as gauges.
+It is a fork of [Fotolia/collectd-mod-haproxy][2], with some changes:
+
+ * Instead of collecting sessions metrics as counters (`stot` and `rate`), it collects current sessions (`scur`) as
+   gauges.
+ * This plugins also reports global current connections count.
 
 ## Build Instructions
 
