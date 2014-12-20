@@ -1,8 +1,8 @@
 # HAProxy collectd Plugin
 
-This [collectd](0) plugin fetches metrics and states from a HAProxy [stats socket](1).
+This [collectd][0] plugin fetches metrics and states from a HAProxy [stats socket][1].
 
-It is a fork of [Fotolia/collectd-mod-haproxy](2): instead of collecting sessions metrics as counters (`stot` and
+It is a fork of [Fotolia/collectd-mod-haproxy][2]: instead of collecting sessions metrics as counters (`stot` and
 `rate`), it collects current sessions (`scur`) as gauges.
 
 ## Build Instructions
@@ -69,7 +69,7 @@ It is also possible to filter metrics collecting on specific proxies (HAProxy `f
   SvFilter "FRONTEND"
 ```
 
-This plugins uses specific collectd [types](3): either copy the `types.db.haproxy` file and add `TypesDB <path to
+This plugins uses specific collectd [types][3]: either copy the `types.db.haproxy` file and add `TypesDB <path to
 types.db.haproxy file>` into your collectd configuration file, or add the types defined in the `types.db.haproxy` file
 into your local collectd `types.db` file. Don't forget to propagate these additional types to all your collectd
 instances if you do collectd network forwarding.
