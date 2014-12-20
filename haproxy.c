@@ -376,7 +376,7 @@ static void hap_line2entry(char *line)
         /* frontend OPEN is considered 100% unavailable */
         pentry->status = 100.0F;
       } else if (!strcmp(p, "no check")) {
-        /* server o check is considered 50% available (to avoid invalid notification) */
+        /* server no check is considered 50% available (to avoid invalid notification) */
         pentry->status = 50.0F;
       } else {
         /* consider other cases as unavalable (ex FULL) */
