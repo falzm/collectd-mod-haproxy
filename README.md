@@ -60,10 +60,12 @@ It is also possible to filter metrics collecting on specific proxies (HAProxy `f
 
 ```
   # Collect metrics for these proxies only
-  PxFilter "http_proxy1", "http_proxy2"
+  PxFilter "http_proxy1"
+  PxFilter "http_proxy2"
 
   # Collect metrics for these backend servers only
-  SvFilter "http_backend1", "http_backend2"
+  SvFilter "http_backend1"
+  SvFilter "http_backend2"
 
   # Collect frontend-level metrics only (no per-backend metrics)
   SvFilter "FRONTEND"
